@@ -20,8 +20,8 @@
 PATH2HIPO := /usr/local
 
 
-HIPOCFLAGS  := -I$(PATH2HIPO)/hipo4 -I$(PATH2HIPO)/hipo4/chart   
-HIPOLIBS    := -L$(PATH2HIPO)/hipo4/lib -lhipo4 
+HIPOCFLAGS  := -I/hipo-cpp/install/include -I$(PATH2HIPO)/hipo4/chart   
+HIPOLIBS    := -L/hipo-cpp/install/lib -lhipo4 
 									
 LZ4LIBS     := -L$(PATH2HIPO)/hipo4/lz4/lib -llz4
 LZ4INCLUDES := -I$(PATH2HIPO)/hipo4/lz4/lib
@@ -51,10 +51,6 @@ all: gui
 
 gui: gui.o AhdcExtractor.o AhdcDetector.o Point3D.o fAxis.o fCanvas.o fH1D.o fH2D.o fColorPalette.o AhdcPulse.o AhdcMapping.o f3Dutils.o
 	$(CXX) -o gui.exe $^ $(HIPOLIBS) $(LZ4LIBS) $(ROOTLIBS) $(GTKLIBS)
-
-test_detector_geo: test_detector_geo.o AtofDetector.o AbstractDetector.o 
-	$(CXX) -o test_detector_geo.exe $^ $(ROOTLIBS)
-
 
 # $< représente la première de la cible, i.e histo.o
 # $^ représente la liste complète des dépendances
