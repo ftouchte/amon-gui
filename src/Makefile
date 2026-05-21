@@ -20,8 +20,8 @@
 PATH2HIPO := /usr/local
 
 
-HIPOCFLAGS  := -I/hipo-cpp/install/include -I$(PATH2HIPO)/hipo4/chart   
-HIPOLIBS    := -L/hipo-cpp/install/lib -lhipo4 
+HIPOCFLAGS  := -I$(PATH2HIPO)/hipo4 -I$(PATH2HIPO)/hipo4/chart   
+HIPOLIBS    := -L$(PATH2HIPO)/hipo4/lib -lhipo4 
 									
 LZ4LIBS     := -L$(PATH2HIPO)/hipo4/lz4/lib -llz4
 LZ4INCLUDES := -I$(PATH2HIPO)/hipo4/lz4/lib
