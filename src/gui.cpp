@@ -1116,7 +1116,7 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 	}
 	fCanvas canvas(width, height, xmin, xmax, ymin, ymax);
 	canvas.define_coord_system(cr);
-	canvas.draw_title(cr, "");
+	// canvas.draw_title(cr, "");
 	canvas.draw_xtitle(cr, "time (ns)");
 	canvas.draw_ytitle(cr, "adc");
 	// x coord to width
@@ -1130,20 +1130,7 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 
 	// draw frame and axis
 	canvas.draw_frame(cr); // can be placed here or at the end, the most important is to have defined `canvas.define_coord_system(cr);` before draw plots
-	
-	int seff = canvas.get_seff();
-	int heff = canvas.get_heff();
-	int weff = canvas.get_weff();	
-	// Draw points
-	cr->set_source_rgb(0.0, 0.0, 1.0);
-	cr->set_line_width(0.01*seff);
-	cr->move_to(x2w(vx[0]),y2h(vy[0]));
-	for (int i = 1; i < NumberOfBins; i++) {
-		// draw a line between points i and i-1
-		cr->line_to(x2w(vx[i]),y2h(vy[i]));
-	}
-	cr->stroke();
-	
+
 	// ___________________________
 	// Show decoded values
 	// ___________________________
@@ -1155,23 +1142,55 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 	double adcMax = wire->pulse.get_adcMax();
 	double adcOffset = wire->pulse.get_adcOffset();
 	int wfType = wire->pulse.get_wfType();
+
+	char buffer[200];
+    sprintf(buffer, "ADC = %.0lf, PED = %.*lf, TIME = %.*lf, TOT = %.*lf, wfType = %d", adcMax, 2, adcOffset, 2, leadingEdgeTime, 2, timeOverThreshold, wfType); 
+	canvas.draw_title(cr, buffer);
+
+	int seff = canvas.get_seff();
+	int heff = canvas.get_heff();
+	int weff = canvas.get_weff();	
+
+	// Display the layer ID
+	cr->set_source_rgb(1.0, 0.0, 0.0);
+	cr->select_font_face("@cairo:sans-serif",Cairo::ToyFontFace::Slant::NORMAL,Cairo::ToyFontFace::Weight::NORMAL);
+	cr->set_font_size(seff*0.1);
+	cr->move_to(weff*0.7, -heff*0.8);
+	cr->show_text(annotation);
+
+
+	// Draw points : waveform
+	cr->set_source_rgb(0.0, 0.0, 1.0);
+	cr->set_line_width(0.01*seff);
+	cr->move_to(x2w(vx[0]),y2h(vy[0]));
+	for (int i = 1; i < NumberOfBins; i++) {
+		// draw a line between points i and i-1
+		cr->line_to(x2w(vx[i]),y2h(vy[i]));
+	}
+	cr->stroke();
+	
+	
+
+	// dash style
+	// std::vector<double> dashes  = {0.02*seff, 0.01*seff};
+	// cr->set_dash(dashes, 0); 
 	
 	// Display leadingEdgeTime
-	cr->set_source_rgb(0.0, 1.0, 0.0); // green
+	cr->set_source_rgb(0.2, 0.6, 0.2); // vert
 	cr->set_line_width(0.01*seff);
 	cr->move_to(x2w(leadingEdgeTime),0);
 	cr->line_to(x2w(leadingEdgeTime),-heff);
 	cr->stroke();
 
 	// Display constantFractionTime
-	cr->set_source_rgb(1.0, 0.0, 0.0); // red
-	cr->set_line_width(0.01*seff);
-	cr->move_to(x2w(constantFractionTime),0);
-	cr->line_to(x2w(constantFractionTime),-heff);
-	cr->stroke();
+	// cr->set_source_rgb(1.0, 0.0, 0.0); // red
+	// cr->set_line_width(0.01*seff);
+	// cr->move_to(x2w(constantFractionTime),0);
+	// cr->line_to(x2w(constantFractionTime),-heff);
+	// cr->stroke();
 
 	// Display timeOverThreshold
-	cr->set_source_rgb(0.016, 0.925, 1); // bleu ciel
+	cr->set_source_rgb(0.0, 0.7, 0.8); // cyan
 	cr->set_line_width(0.01*seff);
 	cr->move_to(x2w(leadingEdgeTime), y2h(adcOffset + adcMax*amplitudeFractionCFA));
 	cr->line_to(x2w(leadingEdgeTime + timeOverThreshold), y2h(adcOffset + adcMax*amplitudeFractionCFA));
@@ -1180,7 +1199,7 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 	cr->stroke();
 
 	// Display adcMax
-	cr->set_source_rgb(1.0, 0.871, 0.016); // rose
+	cr->set_source_rgb(0.8, 0.0, 0.8); // violet
 	cr->set_line_width(0.01*seff);
 	cr->move_to(0,y2h(adcOffset + adcMax));
 	cr->line_to(weff, y2h(adcOffset + adcMax));
@@ -1188,26 +1207,23 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 	//cr->line_to(x2w(timeMax), 0);
 	cr->stroke();
 
-	// Display the layer ID
-	cr->set_source_rgb(1.0, 0.0, 0.0);
-	cr->select_font_face("@cairo:sans-serif",Cairo::ToyFontFace::Slant::NORMAL,Cairo::ToyFontFace::Weight::NORMAL);
-	cr->set_font_size(seff*0.1);
-	cr->move_to(weff*0.7, -heff*0.8);
-	cr->show_text(annotation);
+	// cr->unset_dash();
+
+	
     // Display decoded values
-    {
-        cr->set_source_rgb(0.0, 0.0, 0.0);
-        cr->select_font_face("@cairo:sans-serif",Cairo::ToyFontFace::Slant::NORMAL,Cairo::ToyFontFace::Weight::NORMAL);
-	    cr->set_font_size(seff*0.05);
-        char buffer[200];
-        sprintf(buffer, "ADC = %.0lf, PED = %.*lf, TIME = %.*lf, TOT = %.*lf, wfType = %d", adcMax, 2, adcOffset, 2, leadingEdgeTime, 2, timeOverThreshold, wfType); 
-        Cairo::TextExtents te;
-        cr->get_text_extents(buffer, te);
-        int wpos = 0.5*weff - 0.5*te.width;
-        int hpos = -heff - seff*0.05;
-        cr->move_to(wpos, hpos);
-        cr->show_text(buffer);
-    }
+    // {
+    //     cr->set_source_rgb(0.0, 0.0, 0.0);
+    //     cr->select_font_face("@cairo:sans-serif",Cairo::ToyFontFace::Slant::NORMAL,Cairo::ToyFontFace::Weight::NORMAL);
+	//     cr->set_font_size(seff*0.05);
+    //     char buffer[200];
+    //     sprintf(buffer, "ADC = %.0lf, PED = %.*lf, TIME = %.*lf, TOT = %.*lf, wfType = %d", adcMax, 2, adcOffset, 2, leadingEdgeTime, 2, timeOverThreshold, wfType); 
+    //     Cairo::TextExtents te;
+    //     cr->get_text_extents(buffer, te);
+    //     int wpos = 0.5*weff - 0.5*te.width;
+    //     int hpos = -heff - seff*0.05;
+    //     cr->move_to(wpos, hpos);
+    //     cr->show_text(buffer);
+    // }
 }
 
 bool Window::dataEventAction() {
