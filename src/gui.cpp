@@ -1152,7 +1152,7 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 	int weff = canvas.get_weff();	
 
 	// Display the layer ID
-	cr->set_source_rgb(1.0, 0.0, 0.0);
+	cr->set_source_rgb(0.0, 0.0, 0.0);
 	cr->select_font_face("@cairo:sans-serif",Cairo::ToyFontFace::Slant::NORMAL,Cairo::ToyFontFace::Weight::NORMAL);
 	cr->set_font_size(seff*0.1);
 	cr->move_to(weff*0.7, -heff*0.8);
