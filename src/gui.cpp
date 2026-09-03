@@ -47,7 +47,7 @@ Window::Window() :
 	HBox_footer(Gtk::Orientation::HORIZONTAL,10),
 	HBox_info(Gtk::Orientation::HORIZONTAL,15),
 	// Decoding parameters	
-	ADC_LIMIT(4095),
+	ADC_LIMIT(10000),
 	NumberOfBins(27),
 	samplingTime(48.0), // set at 50.0 if you want use measure in terms of bins
 	amplitudeFractionCFA(0.5),
@@ -649,6 +649,7 @@ void Window::on_button_next_clicked(){
 		adcBank = hipo::bank(hipo_factory.getSchema("AHDC::adc"));
 		wfBank = hipo::bank(hipo_factory.getSchema("AHDC::wf"));
 		trackBank = hipo::bank(hipo_factory.getSchema("AHDC::kftrack"));
+		hitBank = hipo::bank(hipo_factory.getSchema("AHDC::hits"));
 		hipo_nEventMax = hipo_reader.getEntries();
 	}
 	Glib::signal_timeout().connect([this] () -> bool {
@@ -695,6 +696,7 @@ void Window::on_button_run_clicked(){
 		adcBank = hipo::bank(hipo_factory.getSchema("AHDC::adc"));
 		wfBank = hipo::bank(hipo_factory.getSchema("AHDC::wf"));
 		trackBank = hipo::bank(hipo_factory.getSchema("AHDC::kftrack"));
+		hitBank = hipo::bank(hipo_factory.getSchema("AHDC::hits"));
 		hipo_nEventMax = hipo_reader.getEntries();
         }
 	Glib::signal_timeout().connect([this] () -> bool {
@@ -1054,6 +1056,13 @@ void Window::on_draw_event(const Cairo::RefPtr<Cairo::Context>& cr, int width, i
 						double marker_size = std::min(2.0*weff/(x_end-x_start), 2.0*heff/(y_end-y_start));
 						cr->arc(x2w(wire->x), y2h(wire->y) , marker_size, 0, 2*M_PI);
 						cr->fill();
+
+						if (wire->pulse.belong_to_a_track()) {
+							cr->set_source_rgb(1.0, 0.0, 1.0);
+							cr->set_line_width(0.002*seff);
+							cr->arc(x2w(wire->x), y2h(wire->y) , marker_size, 0, 2*M_PI);
+							cr->stroke();
+						}
 					}
 				}
 			}
@@ -1129,6 +1138,7 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 	};
 
 	// draw frame and axis
+	canvas.set_frame_line_width(0.005);
 	canvas.draw_frame(cr); // can be placed here or at the end, the most important is to have defined `canvas.define_coord_system(cr);` before draw plots
 
 	// ___________________________
@@ -1233,11 +1243,12 @@ bool Window::dataEventAction() {
 		hipo_event.getStructure(adcBank);
 		hipo_event.getStructure(wfBank);
 		hipo_event.getStructure(trackBank);
+		hipo_event.getStructure(hitBank);
 		hipo_nEvent++;
 		// loop over hits
 		clearAhdcData();
 		ListOfAdc.clear();
-        ntracks = trackBank.getRows();
+        //ntracks = trackBank.getRows();
 		nWF = 0;
 		for (int col = 0; col < wfBank.getRows(); col++){
 			int sector = wfBank.getInt("sector", col);	
@@ -1297,6 +1308,25 @@ bool Window::dataEventAction() {
                     nWF++;
 			}
 		}
+
+		// Look at hits belonging to reconstructed tracks
+		ntracks = 0;
+		for (int t = 0; t < trackBank.getRows(); t++) {
+			if (trackBank.getInt("n_hits", t) < 6) continue;
+			int trackId = trackBank.getInt("trackid", t);
+			ntracks++;
+			for (int h = 0; h < hitBank.getRows(); h++) {
+				if (hitBank.getInt("trackid", h) == trackId) {
+					int col = hitBank.getShort("id", h) - 1;
+					int sector = wfBank.getInt("sector", col);	
+					int layer = wfBank.getInt("layer", col);
+					int component = wfBank.getInt("component", col);
+					AhdcWire *wire = ahdc->GetSector(sector-1)->GetSuperLayer((layer/10)-1)->GetLayer((layer%10)-1)->GetWire(component-1);
+					wire->pulse.set_belong_to_a_track(true);
+				}
+			}
+		}
+
 		// Update drawings
         update_gui();
 		return true;
@@ -1384,6 +1414,7 @@ void Window::drawWaveformsPerLayer() {
 				auto draw_function = [this, sl, l, layer, ymin, ymax, sum_samples, nhits, buffer] (const Cairo::RefPtr<Cairo::Context>& cr, int width, int height) { // lambda function
 					// Define main canvas
 					fCanvas canvas(width, height, 0, samplingTime*(NumberOfBins-1), ymin, ymax);
+					canvas.set_frame_line_width(0.005);
 					canvas.define_coord_system(cr);
 					canvas.draw_title(cr, "");
 					canvas.draw_xtitle(cr, "time (ns)");
@@ -1425,19 +1456,19 @@ void Window::drawWaveformsPerLayer() {
 						}
 					}
 					// draw the sum of signals
-					cr->set_source_rgb(1.0, 0.0, 0.0);
-					cr->set_line_width(0.005*seff);
-					cr->move_to(x2w(0),y2h(sum_samples[0]));
-					for (int i = 1; i < NumberOfBins; i++) {
-						// draw a line between points i and i-1
-						cr->line_to(x2w(samplingTime*i),y2h(sum_samples[i]));
-					}
-					cr->stroke();
+					// cr->set_source_rgb(1.0, 0.0, 0.0);
+					// cr->set_line_width(0.005*seff);
+					// cr->move_to(x2w(0),y2h(sum_samples[0]));
+					// for (int i = 1; i < NumberOfBins; i++) {
+					// 	// draw a line between points i and i-1
+					// 	cr->line_to(x2w(samplingTime*i),y2h(sum_samples[i]));
+					// }
+					// cr->stroke();
 					// draw frame and axis
 					canvas.set_frame_line_width(0.005);
 					canvas.draw_frame(cr);
 					// add layer name
-					cr->set_source_rgb(1.0, 0.0, 0.0);
+					cr->set_source_rgb(0.0, 0.0, 0.0);
 					cr->select_font_face("@cairo:sans-serif",Cairo::ToyFontFace::Slant::NORMAL,Cairo::ToyFontFace::Weight::NORMAL);
 					cr->set_font_size(0.6*canvas.get_top_margin());
 					Cairo::TextExtents te;
@@ -1450,7 +1481,7 @@ void Window::drawWaveformsPerLayer() {
 				button->signal_clicked().connect([this, draw_function, buffer] () -> void {
 							auto window = Gtk::make_managed<Gtk::Window>();
 							window->set_title("");
-							window->set_default_size(1200,800);
+							window->set_default_size(800, 600);
 							auto area_bis = Gtk::make_managed<Gtk::DrawingArea>();
 							area_bis->set_draw_func(draw_function);
 							// event controller
@@ -1695,7 +1726,7 @@ void Window::on_mouse_clicked (int n_press, double x, double y) {
 			// popup window
 			auto window = Gtk::make_managed<Gtk::Window>();
 			window->set_title("AHDC pulse");
-			window->set_default_size(1200,800);
+			window->set_default_size(800,600);
 			char buffer[50];
 			sprintf(buffer, "L%d W%d", layer, component);
 			auto area = Gtk::make_managed<Gtk::DrawingArea>();

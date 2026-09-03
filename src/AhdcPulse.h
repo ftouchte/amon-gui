@@ -23,6 +23,7 @@ class AhdcPulse {
 	int binOffset;
     bool mask;
     int nhits; // it may happen that we have several hits on this wires, in that case we should have vectors of waveforms, wfType, integral, ... TO BE DONE later
+	bool belongToATrack;
 public :
 	AhdcPulse();
 	void reset();
@@ -38,6 +39,7 @@ public :
 	void set_wfType(int _type);
     void set_mask(bool _mask);
     void triggered();
+	void set_belong_to_a_track(bool boolean);
 
 	double get_integral() const;
 	double get_adcMax() const;
@@ -52,6 +54,7 @@ public :
     bool get_mask() const;
     bool is_masked() const;
     int get_nhits() const;
+	bool belong_to_a_track() const;
 };
 
 #endif

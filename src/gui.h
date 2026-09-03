@@ -108,6 +108,7 @@ protected :
 	hipo::bank adcBank;
 	hipo::bank wfBank;
 	hipo::bank trackBank;
+	hipo::bank hitBank;
 	long unsigned int hipo_nEvent = 0;
 	long unsigned int hipo_nEventMax = 1;
 	int nWF; ///< number of waveforms	

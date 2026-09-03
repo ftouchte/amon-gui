@@ -296,7 +296,7 @@ void fCanvas::set_title_size(double s) { title_size = s*top_margin;}
 void fCanvas::set_label_size(double s) { label_size = s*std::min(bottom_margin, left_margin);}
 void fCanvas::set_stick_size(double s) { stick_size = s*seff;}
 void fCanvas::set_stick_width(double s) { stick_width = s*seff;}
-void fCanvas::set_frame_line_width(double s) { frame_line_width = seff*s;}
+void fCanvas::set_frame_line_width(double s) { frame_line_width = std::max(seff*s, 1.0);}
 
 int    fCanvas::get_top_margin() const {return top_margin;}
 int    fCanvas::get_bottom_margin() const {return bottom_margin;}

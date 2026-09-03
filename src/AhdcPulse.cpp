@@ -32,6 +32,7 @@ void AhdcPulse::reset() {
     wfType = -1; // non defined
     mask = true;
     nhits = 0;
+	belongToATrack = false;
 }
 
 void AhdcPulse::set_integral(double _integral) { integral = _integral;}
@@ -46,6 +47,7 @@ void AhdcPulse::set_samples(std::vector<double> _samples) { samples = _samples;}
 void AhdcPulse::set_wfType(int _type) { wfType = _type;}
 void AhdcPulse::set_mask(bool _mask) { mask = _mask;}
 void AhdcPulse::triggered() { nhits++;}
+void AhdcPulse::set_belong_to_a_track(bool _bool) { belongToATrack = _bool;}
 
 double AhdcPulse::get_integral() const {return integral;}
 double AhdcPulse::get_adcMax() const {return adcMax;}
@@ -60,3 +62,4 @@ int AhdcPulse::get_wfType() const { return wfType;}
 bool AhdcPulse::get_mask() const { return mask;}
 bool AhdcPulse::is_masked() const { return !mask;}
 int AhdcPulse::get_nhits() const { return nhits;}
+bool AhdcPulse::belong_to_a_track() const { return belongToATrack;}
