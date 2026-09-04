@@ -11,7 +11,6 @@
 #define AHDC_DETECTOR
 
 #include "Point3D.h"
-#include "TGraph.h"
 #include "AhdcPulse.h"
 
 namespace futils {
