@@ -119,7 +119,7 @@ protected :
     int maxADC = 4095;
 	// Define variable for cut
 	double cut_amplitude_min = 0;
-	double cut_amplitude_max = 4095;
+	double cut_amplitude_max = 10000;
 	double cut_adcOffset_min = 0;
 	double cut_adcOffset_max = 1000;
 	double cut_leadingEdgeTime_min = 0;
