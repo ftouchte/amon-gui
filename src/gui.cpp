@@ -655,7 +655,7 @@ void Window::on_button_next_clicked(){
 	Glib::signal_timeout().connect([this] () -> bool {
 				if (is_paused) {return false;}
 				if (this->dataEventAction()) {
-					if (nWF == 0) {return true;} // continue the timeout
+					if (nWF == 0 || ntracks < 1) {return true;} // continue the timeout
 					else {return false;} // stop the timeout
 				}
 				else {return false;} // stop the timeout
@@ -959,7 +959,7 @@ void Window::on_draw_event(const Cairo::RefPtr<Cairo::Context>& cr, int width, i
 		zmax = (zmax > adc) ? zmax : adc;	
 	}*/
 	//printf("zmin : %.0lf, zmax : %.0lf\n", zmin, zmax);
-	fColorPalette Palette(5, 1);
+	fColorPalette Palette(2, 2);
 	cr->set_source_rgb(0.0, 0.0, 0.0);
 	cr->set_line_width(0.005*seff);
 	cr->move_to(x2w(80) + 0.01*window_size, y2h(-80)); // 0.1*window_size is the extra margin of right_margin
