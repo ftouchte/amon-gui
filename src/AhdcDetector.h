@@ -26,8 +26,8 @@ namespace futils {
 class AhdcWire {
 	int id;
 public : 
-	Point3D top; ///< center point of the top the wire (z == -150 mm)
-	Point3D bot; ///< center point of the bottom the wire (z == +150 mm)
+	Point3D top; ///< center point of the top the wire (z == -188 mm)
+	Point3D bot; ///< center point of the bottom the wire (z == +162.5 mm)
 	AhdcPulse pulse; ///< ahdc pulse
 	double z = 0.0, x = 0.0, y = 0.0; ///< x and y must change if z change (when z == 0, x = top.x and y = top.y)
 	int occ = 0; ///< occupancy
