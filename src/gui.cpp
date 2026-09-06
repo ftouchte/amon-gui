@@ -443,6 +443,15 @@ void Window::on_button_settings_clicked(){
                 printf("wfType_5 : %s\n", flag_wfType_5 ? "ON" : "OFF");
 			});
     CheckButton_wfType_5.set_active(false);
+		// wfType_6
+	HBox_CheckButton_wfTypes->append(*Gtk::make_managed<Gtk::Label>("6"));
+	HBox_CheckButton_wfTypes->append(CheckButton_wfType_6);
+	CheckButton_wfType_6.signal_toggled().connect([this] () -> void {
+				flag_wfType_6 = this->CheckButton_wfType_6.get_active();
+                update_gui();
+                printf("wfType_6 : %s\n", flag_wfType_6 ? "ON" : "OFF");
+			});
+    CheckButton_wfType_6.set_active(false);
     // Apply raw cuts
 	VBox_settings->append(*HBox_CheckButton_apply_raw_cuts);
 	HBox_CheckButton_apply_raw_cuts->set_halign(Gtk::Align::CENTER);
@@ -2422,11 +2431,11 @@ bool Window::update_cut_flag(double adcMax, double adcOffset, double leadingEdge
     // wfType cuts : have priority
     if (flag_apply_wfType_cuts) {
         std::vector<int> authorisedValues;
-        std::vector<bool> all_flags = {flag_wfType_0, flag_wfType_1, flag_wfType_2, flag_wfType_3, flag_wfType_4, flag_wfType_5};
-        for (int i = 0; i <= 5; i++) {
+        std::vector<bool> all_flags = {flag_wfType_0, flag_wfType_1, flag_wfType_2, flag_wfType_3, flag_wfType_4, flag_wfType_5, flag_wfType_6};
+        for (int i = 0; i <= 6; i++) {
             if (all_flags[i]) authorisedValues.push_back(i); 
         }
-        if (authorisedValues.empty()) { flag = true; } // no flag cuts to be applied
+        if (authorisedValues.empty()) { flag = false; } // no flag cuts to be applied
         else {
             bool is_good_wfType = false;
             for (int i : authorisedValues) {

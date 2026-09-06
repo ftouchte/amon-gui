@@ -96,6 +96,7 @@ protected :
 	Gtk::CheckButton CheckButton_wfType_3; 
 	Gtk::CheckButton CheckButton_wfType_4; 
 	Gtk::CheckButton CheckButton_wfType_5; 
+	Gtk::CheckButton CheckButton_wfType_6;
 		
 	/******************  DATA  *****************
 	 * *****************************************/
@@ -136,6 +137,7 @@ protected :
 	bool flag_wfType_3 = false;
 	bool flag_wfType_4 = false;
 	bool flag_wfType_5 = false;
+	bool flag_wfType_6 = false;
 	double zpos = -188.0; ///< define in which z we should look at for AHDC (x,y) view
 	int HV_SECTOR = -1;
 	Gtk::TextView TextView_occupancy;
