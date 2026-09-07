@@ -158,7 +158,7 @@ protected :
 	fH1D hist1d_timeOverThreshold;
 	fH1D hist1d_timeMax;
 	fH1D hist1d_adcOffset;
-	fH1D hist1d_constantFractionTime;
+	fH1D hist1d_calibratedTime;
 	fH2D hist2d_occupancy;
 	std::map<std::string, std::function<void(const Cairo::RefPtr<Cairo::Context>&, int, int)>> renderers;
 

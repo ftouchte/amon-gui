@@ -85,8 +85,8 @@ Window::Window() :
         hist1d_leadingEdgeTime("leadingEdgeTime", 100, 0.0, samplingTime*(NumberOfBins-1)),
         hist1d_timeOverThreshold("timeOverThreshold", 100, 0.0, samplingTime*(NumberOfBins-1)),
         hist1d_timeMax("timeMax", 100, 0.0, samplingTime*(NumberOfBins-1)),
-	hist1d_adcOffset("adcOffset (s1+s2+s3+s4+s5)/5", 100, 0.0, 1000),
-        hist1d_constantFractionTime("constantFractionTime", 100, 0.0, samplingTime*(NumberOfBins-1)),
+	hist1d_adcOffset("adcOffset (s1+s2+s3+s4)/4", 100, 0.0, 1000),
+        hist1d_calibratedTime("calibratedTime", 100, 0.0, 1000),
         hist2d_occupancy("occupancy", 99, 1.0, 100.0, 8, 1.0, 9.0)
 {
 	// Data
@@ -152,7 +152,7 @@ Window::Window() :
         hist1d_timeOverThreshold.set_xtitle("time (ns)");
         hist1d_timeMax.set_xtitle("time (ns)");
 	hist1d_adcOffset.set_xtitle("adc");
-        hist1d_constantFractionTime.set_xtitle("time (ns)");
+        hist1d_calibratedTime.set_xtitle("time (ns)");
 	// page 3
 	Book.append_page(Grid_occupancy, "Occupancy");
 	Grid_occupancy.set_expand(true);
@@ -1199,7 +1199,7 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 	//int binOffset = wire->pulse.get_binOffset();
 	//double timeMax = wire->pulse.get_timeMax();
 	double leadingEdgeTime = wire->pulse.get_leadingEdgeTime();
-	double constantFractionTime = wire->pulse.get_constantFractionTime();
+	//double constantFractionTime = wire->pulse.get_constantFractionTime();
 	double timeOverThreshold = wire->pulse.get_timeOverThreshold();
 	double adcMax = wire->pulse.get_adcMax();
 	double adcOffset = wire->pulse.get_adcOffset();
@@ -1305,7 +1305,7 @@ bool Window::dataEventAction() {
         //ntracks = trackBank.getRows();
 
 		// load CCDB
-		if (hipo_nEvent == 0) {
+		if (hipo_nEvent == 1) {
 			int runNumber = runBank.getInt("run", 0);
 			ahdcConstants.setRunNumber(runNumber);
 			ahdcConstants.loadConstants();
@@ -1366,7 +1366,7 @@ bool Window::dataEventAction() {
 					hist1d_timeOverThreshold.fill(timeOverThreshold);
 					hist1d_timeMax.fill(timeMax);
 					hist1d_adcOffset.fill(adcOffset);
-					hist1d_constantFractionTime.fill(constantFractionTime);
+					hist1d_calibratedTime.fill(calibratedTime);
 					hist2d_occupancy.fill(component, layer2number(layer));
                     // ????
                     wire->occ += 1;
@@ -1708,13 +1708,13 @@ void Window::drawHistograms() {
 				window->show();
 			});
 	Grid_histograms.attach(*button4,2,2);
-	// area 6 : hist1d_constantFractionTime
+	// area 6 : hist1d_calibratedTime
 	auto button6 = Gtk::make_managed<Gtk::Button>();
 	auto area6 = Gtk::make_managed<Gtk::DrawingArea>();
 	button6->set_child(*area6);
 	auto draw_function6 = [this] (const Cairo::RefPtr<Cairo::Context>& cr, int width, int height) {
-		this->hist1d_constantFractionTime.set_fill_color({0.855, 0.6, 0.969}); // violet
-		this->hist1d_constantFractionTime.draw_with_cairo(cr, width, height);
+		this->hist1d_calibratedTime.set_fill_color({0.855, 0.6, 0.969}); // violet
+		this->hist1d_calibratedTime.draw_with_cairo(cr, width, height);
 	};
 	area6->set_draw_func(draw_function6);
 	button6->signal_clicked().connect([this, draw_function6] () -> void {
@@ -2555,7 +2555,7 @@ void Window::restart_histograms() {
 	hist1d_timeOverThreshold.reset();
 	hist1d_timeMax.reset();
 	hist1d_adcOffset.reset();
-    hist1d_constantFractionTime.reset();
+    hist1d_calibratedTime.reset();
 	hist2d_occupancy.reset();
 }
 
