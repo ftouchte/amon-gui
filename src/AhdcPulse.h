@@ -18,6 +18,7 @@ class AhdcPulse {
 	double adcOffset;
 	double timeMax;
 	double leadingEdgeTime;
+	double calibratedTime;
 	double timeOverThreshold;
 	double constantFractionTime;
 	int binOffset;
@@ -32,6 +33,7 @@ public :
 	void set_adcOffset(double _adcOffset);
 	void set_timeMax(double _timeMax);
 	void set_leadingEdgeTime(double _leadingEdgeTime);
+	void set_calibratedTime(double _calibratedTime);
 	void set_timeOverThreshold(double _timeOverThreshold);
 	void set_constantFractionTime(double _constantFractionTime);
 	void set_binOffset(int _binOffset);
@@ -46,6 +48,7 @@ public :
 	double get_adcOffset() const;
 	double get_timeMax() const;
 	double get_leadingEdgeTime() const;
+	double get_calibratedTime() const;
 	double get_timeOverThreshold() const;
 	double get_constantFractionTime() const;
 	int get_binOffset() const;

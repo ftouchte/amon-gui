@@ -15,6 +15,7 @@ AhdcPulse::AhdcPulse() {
 	leadingEdgeTime = 0;
 	timeOverThreshold = 0;
 	constantFractionTime = 0;
+	calibratedTime = 0;
     wfType = 100; // non defined
     mask = true;
     nhits = 0;
@@ -29,6 +30,7 @@ void AhdcPulse::reset() {
 	leadingEdgeTime = 0;
 	timeOverThreshold = 0;
 	constantFractionTime = 0;
+	calibratedTime = 0;
     wfType = -1; // non defined
     mask = true;
     nhits = 0;
@@ -40,6 +42,7 @@ void AhdcPulse::set_adcMax(double _adcMax) { adcMax = _adcMax;}
 void AhdcPulse::set_adcOffset(double _adcOffset) { adcOffset = _adcOffset;}
 void AhdcPulse::set_timeMax(double _timeMax) { timeMax = _timeMax;}
 void AhdcPulse::set_leadingEdgeTime(double _leadingEdgeTime) { leadingEdgeTime = _leadingEdgeTime;}
+void AhdcPulse::set_calibratedTime(double _calibratedTime) { calibratedTime = _calibratedTime;}
 void AhdcPulse::set_timeOverThreshold(double _timeOverThreshold) { timeOverThreshold = _timeOverThreshold;}
 void AhdcPulse::set_constantFractionTime(double _constantFractionTime) { constantFractionTime = _constantFractionTime;}
 void AhdcPulse::set_binOffset(int _binOffset) { binOffset = _binOffset;}
@@ -54,6 +57,7 @@ double AhdcPulse::get_adcMax() const {return adcMax;}
 double AhdcPulse::get_adcOffset() const {return adcOffset;}
 double AhdcPulse::get_timeMax() const {return timeMax;}
 double AhdcPulse::get_leadingEdgeTime() const {return leadingEdgeTime;}
+double AhdcPulse::get_calibratedTime() const {return calibratedTime;}
 double AhdcPulse::get_timeOverThreshold() const {return timeOverThreshold;}
 double AhdcPulse::get_constantFractionTime() const {return constantFractionTime;}
 int    AhdcPulse::get_binOffset() const {return binOffset;}

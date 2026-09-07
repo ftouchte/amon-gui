@@ -60,6 +60,8 @@ Window::Window() :
 	Adjustment_cut_adcOffset_max(Gtk::Adjustment::create(1000, 0.0, 1000, 1, 0.0, 0.0)),
 	Adjustment_cut_leadingEdgeTime_min(Gtk::Adjustment::create(0.0, 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
 	Adjustment_cut_leadingEdgeTime_max(Gtk::Adjustment::create(samplingTime*(NumberOfBins-1), 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
+	Adjustment_cut_calibratedTime_min(Gtk::Adjustment::create(0.0, 0.0, 500, 1, 0.0, 0.0)),
+	Adjustment_cut_calibratedTime_max(Gtk::Adjustment::create(500.0, 0.0, 500, 1, 0.0, 0.0)),
 	Adjustment_cut_timeOverThreshold_min(Gtk::Adjustment::create(0.0, 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
 	Adjustment_cut_timeOverThreshold_max(Gtk::Adjustment::create(samplingTime*(NumberOfBins-1), 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
 	Adjustment_cut_timeMax_min(Gtk::Adjustment::create(0.0, 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
@@ -71,6 +73,8 @@ Window::Window() :
 	Scale_cut_adcOffset_max(Adjustment_cut_adcOffset_max, Gtk::Orientation::HORIZONTAL),
 	Scale_cut_leadingEdgeTime_min(Adjustment_cut_leadingEdgeTime_min, Gtk::Orientation::HORIZONTAL),
 	Scale_cut_leadingEdgeTime_max(Adjustment_cut_leadingEdgeTime_max, Gtk::Orientation::HORIZONTAL),
+	Scale_cut_calibratedTime_min(Adjustment_cut_calibratedTime_min, Gtk::Orientation::HORIZONTAL),
+	Scale_cut_calibratedTime_max(Adjustment_cut_calibratedTime_max, Gtk::Orientation::HORIZONTAL),
 	Scale_cut_timeOverThreshold_min(Adjustment_cut_timeOverThreshold_min, Gtk::Orientation::HORIZONTAL),
 	Scale_cut_timeOverThreshold_max(Adjustment_cut_timeOverThreshold_max, Gtk::Orientation::HORIZONTAL),
 	Scale_cut_timeMax_min(Adjustment_cut_timeMax_min, Gtk::Orientation::HORIZONTAL),
@@ -91,6 +95,8 @@ Window::Window() :
         cut_adcOffset_max = 4095;
         cut_leadingEdgeTime_min = 0;
         cut_leadingEdgeTime_max = 950;
+		cut_calibratedTime_min = 0;
+        cut_calibratedTime_max = 950;
         cut_timeOverThreshold_min = 0;
         cut_timeOverThreshold_max = 950;
         cut_timeMax_min = 0;
@@ -354,6 +360,8 @@ void Window::on_button_settings_clicked(){
 	auto HBox_Scale_cut_adcOffset_max = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL,10);
 	auto HBox_Scale_cut_leadingEdgeTime_min = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL,10);
 	auto HBox_Scale_cut_leadingEdgeTime_max = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL,10);
+	auto HBox_Scale_cut_calibratedTime_min = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL,10);
+	auto HBox_Scale_cut_calibratedTime_max = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL,10);
 	auto HBox_Scale_cut_timeOverThreshold_min = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL,10);
 	auto HBox_Scale_cut_timeOverThreshold_max = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL,10);
 	auto HBox_Scale_cut_timeMax_min = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL,10);
@@ -562,6 +570,37 @@ void Window::on_button_settings_clicked(){
 				this->cut_leadingEdgeTime_max = val;
                 update_gui();
 			});
+	auto Separator1bis = Gtk::make_managed<Gtk::Separator>();
+	VBox_settings->append(*Separator1bis);	
+	// Scale_cut_calibratedTime_min
+	auto Label2bis = Gtk::make_managed<Gtk::Label>();
+	Label2bis->set_markup("<b> calibratedTime </b>");
+	VBox_settings->append(*Label2bis);
+	VBox_settings->append(*HBox_Scale_cut_calibratedTime_min);
+        HBox_Scale_cut_calibratedTime_min->set_margin_start(10);
+        HBox_Scale_cut_calibratedTime_min->append(*Gtk::make_managed<Gtk::Label>("MIN"));
+        HBox_Scale_cut_calibratedTime_min->append(Scale_cut_calibratedTime_min);	
+	Scale_cut_calibratedTime_min.set_hexpand(true);
+	Scale_cut_calibratedTime_min.set_draw_value();
+	Scale_cut_calibratedTime_min.set_digits(0);
+	Adjustment_cut_calibratedTime_min->signal_value_changed().connect([this] () -> void {
+				const double val = this->Adjustment_cut_calibratedTime_min->get_value();
+				this->cut_calibratedTime_min = val;
+                update_gui();
+			});
+	// Scale_cut_calibratedTime_max
+	VBox_settings->append(*HBox_Scale_cut_calibratedTime_max);
+        HBox_Scale_cut_calibratedTime_max->set_margin_start(10);
+        HBox_Scale_cut_calibratedTime_max->append(*Gtk::make_managed<Gtk::Label>("MAX"));
+        HBox_Scale_cut_calibratedTime_max->append(Scale_cut_calibratedTime_max);
+	Scale_cut_calibratedTime_max.set_hexpand(true);
+	Scale_cut_calibratedTime_max.set_draw_value();
+	Scale_cut_calibratedTime_max.set_digits(0);
+	Adjustment_cut_calibratedTime_max->signal_value_changed().connect([this] () -> void {
+				const double val = this->Adjustment_cut_calibratedTime_max->get_value();
+				this->cut_calibratedTime_max = val;
+                update_gui();
+			});
 	auto Separator2 = Gtk::make_managed<Gtk::Separator>();
 	VBox_settings->append(*Separator2);	
 	// Scale_cut_timeOverThreshold_min
@@ -659,6 +698,8 @@ void Window::on_button_next_clicked(){
 		wfBank = hipo::bank(hipo_factory.getSchema("AHDC::wf"));
 		trackBank = hipo::bank(hipo_factory.getSchema("AHDC::kftrack"));
 		hitBank = hipo::bank(hipo_factory.getSchema("AHDC::hits"));
+		runBank = hipo::bank(hipo_factory.getSchema("RUN::config"));
+		recEventBank = hipo::bank(hipo_factory.getSchema("REC::Event"));
 		hipo_nEventMax = hipo_reader.getEntries();
 	}
 	Glib::signal_timeout().connect([this] () -> bool {
@@ -699,15 +740,17 @@ void Window::on_button_run_clicked(){
 	if (filename.size() == 0) {
                 return;
         }
-        if (hipo_nEvent == 0) {
-                hipo_reader.open(filename.c_str());
+	if (hipo_nEvent == 0) {
+		hipo_reader.open(filename.c_str());
 		hipo_reader.readDictionary(hipo_factory);
 		adcBank = hipo::bank(hipo_factory.getSchema("AHDC::adc"));
 		wfBank = hipo::bank(hipo_factory.getSchema("AHDC::wf"));
 		trackBank = hipo::bank(hipo_factory.getSchema("AHDC::kftrack"));
 		hitBank = hipo::bank(hipo_factory.getSchema("AHDC::hits"));
+		runBank = hipo::bank(hipo_factory.getSchema("RUN::config"));
+		recEventBank = hipo::bank(hipo_factory.getSchema("REC::Event"));
 		hipo_nEventMax = hipo_reader.getEntries();
-        }
+	}
 	Glib::signal_timeout().connect([this] () -> bool {
 				if (is_paused || is_reset) {return false;}
 				if (this->dataEventAction()) {
@@ -1253,11 +1296,22 @@ bool Window::dataEventAction() {
 		hipo_event.getStructure(wfBank);
 		hipo_event.getStructure(trackBank);
 		hipo_event.getStructure(hitBank);
+		hipo_event.getStructure(recEventBank);
+		hipo_event.getStructure(runBank);
 		hipo_nEvent++;
 		// loop over hits
 		clearAhdcData();
 		ListOfAdc.clear();
         //ntracks = trackBank.getRows();
+
+		// load CCDB
+		if (hipo_nEvent == 0) {
+			int runNumber = runBank.getInt("run", 0);
+			ahdcConstants.setRunNumber(runNumber);
+			ahdcConstants.loadConstants();
+		}
+		double startTime = recEventBank.getFloat("startTime", 0);
+
 		nWF = 0;
 		for (int col = 0; col < wfBank.getRows(); col++){
 			int sector = wfBank.getInt("sector", col);	
@@ -1288,6 +1342,8 @@ bool Window::dataEventAction() {
             timestamp = timestamp & 0x00000007;
             double timeCorrection = (timestamp + 0.5)*8.0;
             leadingEdgeTime -= timeCorrection;
+			double t0 = ahdcConstants.get_t0(1, layer, component).t0;
+			double calibratedTime = leadingEdgeTime -t0 - startTime;
             ///////////////////
             AhdcWire *wire = ahdc->GetSector(sector-1)->GetSuperLayer((layer/10)-1)->GetLayer((layer%10)-1)->GetWire(component-1);	
             wire->pulse.triggered();
@@ -1301,7 +1357,8 @@ bool Window::dataEventAction() {
             wire->pulse.set_binOffset(binOffset);
             wire->pulse.set_samples(samples);
             wire->pulse.set_wfType(wfType);
-            bool status = update_cut_flag(adcMax, adcOffset, leadingEdgeTime, timeOverThreshold, timeMax, wfType);
+			wire->pulse.set_calibratedTime(calibratedTime);
+            bool status = update_cut_flag(adcMax, adcOffset, leadingEdgeTime, calibratedTime, timeOverThreshold, timeMax, wfType);
             wire->pulse.set_mask(status);
             if (status) {
 					hist1d_adcMax.fill(adcMax);
@@ -1321,7 +1378,7 @@ bool Window::dataEventAction() {
 		// Look at hits belonging to reconstructed tracks
 		ntracks = 0;
 		for (int t = 0; t < trackBank.getRows(); t++) {
-			if (trackBank.getInt("n_hits", t) < 6) continue;
+			if (trackBank.getInt("n_hits", t) < 0) continue;
 			int trackId = trackBank.getInt("trackid", t);
 			ntracks++;
 			for (int h = 0; h < hitBank.getRows(); h++) {
@@ -1884,7 +1941,8 @@ void Window::updateWireStatus() {
                     double timeMax           = wire->pulse.get_timeMax();
                     int wfType = wire->pulse.get_wfType();
                     int nhits = wire->pulse.get_nhits();
-                    bool status = update_cut_flag(adcMax, adcOffset, leadingEdgeTime, timeOverThreshold, timeMax, wfType);
+					double calibratedTime = wire->pulse.get_calibratedTime();
+                    bool status = update_cut_flag(adcMax, adcOffset, leadingEdgeTime, calibratedTime, timeOverThreshold, timeMax, wfType);
                     wire->pulse.set_mask(status);
                     if (nhits > 0 && status) nWF++;
                     if ((nhits > 0) && status && is_first) {
@@ -2425,7 +2483,7 @@ void Window::Get_HV_sector(int sector, int layer, int component, int & crate, in
 	}
 }
 
-bool Window::update_cut_flag(double adcMax, double adcOffset, double leadingEdgeTime, double timeOverThreshold, double timeMax, int wfType) {
+bool Window::update_cut_flag(double adcMax, double adcOffset, double leadingEdgeTime, double calibratedTime, double timeOverThreshold, double timeMax, int wfType) {
     bool flag = false; 
     // flag = true means that the wire should be shown
     // wfType cuts : have priority
@@ -2455,6 +2513,8 @@ bool Window::update_cut_flag(double adcMax, double adcOffset, double leadingEdge
                 (adcOffset <= cut_adcOffset_max) && 
                 (leadingEdgeTime >= cut_leadingEdgeTime_min) &&
                 (leadingEdgeTime <= cut_leadingEdgeTime_max) &&
+				(calibratedTime >= cut_calibratedTime_min) &&
+                (calibratedTime <= cut_calibratedTime_max) &&
                 (timeOverThreshold >= cut_timeOverThreshold_min) && 
                 (timeOverThreshold <= cut_timeOverThreshold_max) &&
                 (timeMax >= cut_timeMax_min) &&

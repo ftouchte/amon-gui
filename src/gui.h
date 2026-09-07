@@ -19,6 +19,7 @@
 #include "AhdcExtractor.h"
 #include "fH1D.h"
 #include "fH2D.h"
+#include "AhdcCCDB.h"
 
 class Window : public Gtk::Window {
 protected :
@@ -79,12 +80,14 @@ protected :
 	Glib::RefPtr<Gtk::Adjustment> Adjustment_amplitude_min, Adjustment_amplitude_max;
 	Glib::RefPtr<Gtk::Adjustment> Adjustment_cut_adcOffset_min, Adjustment_cut_adcOffset_max;
 	Glib::RefPtr<Gtk::Adjustment> Adjustment_cut_leadingEdgeTime_min, Adjustment_cut_leadingEdgeTime_max;
+	Glib::RefPtr<Gtk::Adjustment> Adjustment_cut_calibratedTime_min, Adjustment_cut_calibratedTime_max;
 	Glib::RefPtr<Gtk::Adjustment> Adjustment_cut_timeOverThreshold_min, Adjustment_cut_timeOverThreshold_max;
 	Glib::RefPtr<Gtk::Adjustment> Adjustment_cut_timeMax_min, Adjustment_cut_timeMax_max;
 	Glib::RefPtr<Gtk::Adjustment> Adjustment_zpos; 
 	Gtk::Scale Scale_amplitude_min, Scale_amplitude_max;
 	Gtk::Scale Scale_cut_adcOffset_min, Scale_cut_adcOffset_max;
 	Gtk::Scale Scale_cut_leadingEdgeTime_min, Scale_cut_leadingEdgeTime_max;
+	Gtk::Scale Scale_cut_calibratedTime_min, Scale_cut_calibratedTime_max;
 	Gtk::Scale Scale_cut_timeOverThreshold_min, Scale_cut_timeOverThreshold_max;
 	Gtk::Scale Scale_cut_timeMax_min, Scale_cut_timeMax_max;
 	Gtk::Scale Scale_zpos;
@@ -110,6 +113,9 @@ protected :
 	hipo::bank wfBank;
 	hipo::bank trackBank;
 	hipo::bank hitBank;
+	hipo::bank runBank;
+	hipo::bank recEventBank;
+	AhdcCCDB ahdcConstants;
 	long unsigned int hipo_nEvent = 0;
 	long unsigned int hipo_nEventMax = 1;
 	int nWF; ///< number of waveforms	
@@ -125,6 +131,8 @@ protected :
 	double cut_adcOffset_max = 1000;
 	double cut_leadingEdgeTime_min = 0;
 	double cut_leadingEdgeTime_max = 950;
+	double cut_calibratedTime_min = 0;
+	double cut_calibratedTime_max = 500;
 	double cut_timeOverThreshold_min = 0;
 	double cut_timeOverThreshold_max = 950;
 	double cut_timeMax_min = 0;
@@ -168,7 +176,7 @@ public :
 	int getNumberOfWaveforms();
 	bool is_oscillating(std::vector<double> samples);
 	void getStats(double & MIN_ADC, double & MAX_ADC, int & MIN_OCC, int & MAX_OCC);
-    bool update_cut_flag(double adcMax, double adcOffset, double leadingEdgeTime, double timeOverThreshold, double timeMax, int wfType);
+    bool update_cut_flag(double adcMax, double adcOffset, double leadingEdgeTime, double claibratedTime, double timeOverThreshold, double timeMax, int wfType);
     void update_gui();
     void restart_histograms();
     void updateWireStatus();

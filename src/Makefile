@@ -39,6 +39,9 @@ GTKFLAGS = $(shell pkg-config --cflags gtkmm-4.0)
 CAIROLIBS = $(shell pkg-config --libs cairomm-1.16)
 CAIROFLAGS = $(shell pkg-config --cflags cairomm-1.16)
 
+CCDBLIBS = -L$(CCDB_HOME)/cpp/install/lib -lccdb
+CCDBFLAGS = -I$(CCDB_HOME)/cpp/install/include
+
 
 CXX       := g++
 CXXFLAGS  += -Wall -fPIC -std=c++17
@@ -47,10 +50,13 @@ LDFLAGS   :=
 
 
 #all:  showFile histo plot benchmark simu
-all: gui  
+all: gui  wf-study
 
-gui: gui.o AhdcExtractor.o AhdcDetector.o Point3D.o fAxis.o fCanvas.o fH1D.o fH2D.o fColorPalette.o AhdcPulse.o AhdcMapping.o f3Dutils.o
-	$(CXX) -o gui.exe $^ $(HIPOLIBS) $(LZ4LIBS) $(ROOTLIBS) $(GTKLIBS)
+gui: gui.o AhdcExtractor.o AhdcDetector.o Point3D.o fAxis.o fCanvas.o fH1D.o fH2D.o fColorPalette.o AhdcPulse.o AhdcMapping.o f3Dutils.o AhdcCCDB.o
+	$(CXX) -o gui.exe $^ $(HIPOLIBS) $(LZ4LIBS) $(ROOTLIBS) $(GTKLIBS) $(CCDBLIBS)
+
+wf-study: wf-study.o AhdcExtractor.o AhdcDetector.o Point3D.o fAxis.o fCanvas.o fH1D.o fH2D.o fColorPalette.o AhdcPulse.o AhdcMapping.o f3Dutils.o
+	$(CXX) -o wf-study.exe $^ $(HIPOLIBS) $(LZ4LIBS) $(ROOTLIBS) $(GTKLIBS)
 
 # $< représente la première de la cible, i.e histo.o
 # $^ représente la liste complète des dépendances
@@ -60,7 +66,7 @@ clean:
 	@rm -rf *.o *~ *.exe example*hipo *.pdf
 
 %.o: %.cpp
-	$(CXX) -c $< -O2 $(CXXFLAGS) $(HIPOCFLAGS) $(LZ4INCLUDES) $(ROOTCFLAGS) $(GTKFLAGS) 
+	$(CXX) -c $< -O2 $(CXXFLAGS) $(HIPOCFLAGS) $(LZ4INCLUDES) $(ROOTCFLAGS) $(GTKFLAGS) $(CCDBFLAGS)
 	
 #	$(CXX) -c $< -O2 $(CXXFLAGS) $(HIPOCFLAGS) $(LZ4INCLUDES) $(ROOTCFLAGS) $(RAPID_CHECK_FLAGS) $(FELIXFLAGS)
 
