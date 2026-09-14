@@ -60,8 +60,8 @@ Window::Window() :
 	Adjustment_cut_adcOffset_max(Gtk::Adjustment::create(1000, 0.0, 1000, 1, 0.0, 0.0)),
 	Adjustment_cut_leadingEdgeTime_min(Gtk::Adjustment::create(0.0, 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
 	Adjustment_cut_leadingEdgeTime_max(Gtk::Adjustment::create(samplingTime*(NumberOfBins-1), 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
-	Adjustment_cut_calibratedTime_min(Gtk::Adjustment::create(0.0, 0.0, 500, 1, 0.0, 0.0)),
-	Adjustment_cut_calibratedTime_max(Gtk::Adjustment::create(500.0, 0.0, 500, 1, 0.0, 0.0)),
+	Adjustment_cut_calibratedTime_min(Gtk::Adjustment::create(0.0, -100.0, 500, 1, 0.0, 0.0)),
+	Adjustment_cut_calibratedTime_max(Gtk::Adjustment::create(500.0, -100.0, 500, 1, 0.0, 0.0)),
 	Adjustment_cut_timeOverThreshold_min(Gtk::Adjustment::create(0.0, 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
 	Adjustment_cut_timeOverThreshold_max(Gtk::Adjustment::create(samplingTime*(NumberOfBins-1), 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
 	Adjustment_cut_timeMax_min(Gtk::Adjustment::create(0.0, 0.0, samplingTime*(NumberOfBins-1), 1, 0.0, 0.0)),
@@ -705,7 +705,7 @@ void Window::on_button_next_clicked(){
 	Glib::signal_timeout().connect([this] () -> bool {
 				if (is_paused) {return false;}
 				if (this->dataEventAction()) {
-					if (nWF == 0 || ntracks < 1) {return true;} // continue the timeout
+					if (nWF == 0 || ntracks < 2) {return true;} // continue the timeout
 					else {return false;} // stop the timeout
 				}
 				else {return false;} // stop the timeout
@@ -989,6 +989,11 @@ void Window::on_draw_event(const Cairo::RefPtr<Cairo::Context>& cr, int width, i
 	cr->move_to(x2w(-70)+3, y2h(-70));
 	cr->arc(x2w(-70),y2h(-70), 3, 0, 2*M_PI);
 	cr->fill();
+	// Draw center
+	cr->set_source_rgba(0.0, 0.0, 0.0,0.5);
+	cr->move_to(x2w(0)+3, y2h(0));
+	cr->arc(x2w(0),y2h(0), 3, 0, 2*M_PI);
+	cr->fill();
 	{ // z axis label
 		cr->set_source_rgb(1.0, 0.0, 0.0);
 		cr->select_font_face("@cairo:sans-serif",Cairo::ToyFontFace::Slant::NORMAL,Cairo::ToyFontFace::Weight::NORMAL);
@@ -1199,14 +1204,14 @@ void Window::cairo_plot_waveform(const Cairo::RefPtr<Cairo::Context>& cr, int wi
 	//int binOffset = wire->pulse.get_binOffset();
 	//double timeMax = wire->pulse.get_timeMax();
 	double leadingEdgeTime = wire->pulse.get_leadingEdgeTime();
-	//double constantFractionTime = wire->pulse.get_constantFractionTime();
+	double calibratedTime = wire->pulse.get_calibratedTime();
 	double timeOverThreshold = wire->pulse.get_timeOverThreshold();
 	double adcMax = wire->pulse.get_adcMax();
 	double adcOffset = wire->pulse.get_adcOffset();
 	int wfType = wire->pulse.get_wfType();
 
 	char buffer[200];
-    sprintf(buffer, "ADC = %.0lf, PED = %.*lf, TIME = %.*lf, TOT = %.*lf, wfType = %d", adcMax, 2, adcOffset, 2, leadingEdgeTime, 2, timeOverThreshold, wfType); 
+    sprintf(buffer, "ADC = %.0lf, PED = %.*lf, TIME = %.*lf, TOT = %.*lf, wfType = %d", adcMax, 2, adcOffset, 2, calibratedTime, 2, timeOverThreshold, wfType); 
 	canvas.draw_title(cr, buffer);
 
 	int seff = canvas.get_seff();
@@ -1337,13 +1342,13 @@ bool Window::dataEventAction() {
             double adcOffset = this->adcBank.getFloat("ped", col);
             double integral = this->adcBank.getInt("integral", col);
             int wfType = this->adcBank.getInt("wfType", col);
-            // remove fineTimeStampCorrection
+			double t0 = ahdcConstants.get_t0(1, layer, component).t0;
+			double calibratedTime = leadingEdgeTime -t0 - startTime;
+			// remove fineTimeStampCorrection
             long timestamp = wfBank.getLong("timestamp", col);
             timestamp = timestamp & 0x00000007;
             double timeCorrection = (timestamp + 0.5)*8.0;
             leadingEdgeTime -= timeCorrection;
-			double t0 = ahdcConstants.get_t0(1, layer, component).t0;
-			double calibratedTime = leadingEdgeTime -t0 - startTime;
             ///////////////////
             AhdcWire *wire = ahdc->GetSector(sector-1)->GetSuperLayer((layer/10)-1)->GetLayer((layer%10)-1)->GetWire(component-1);	
             wire->pulse.triggered();
@@ -1374,15 +1379,22 @@ bool Window::dataEventAction() {
                     nWF++;
 			}
 		}
+		// if (nWF > 0) {
+		// 	trackBank.show();
+		// 	hitBank.show();
+		// 	adcBank.show();
+		// }
 
 		// Look at hits belonging to reconstructed tracks
 		ntracks = 0;
 		for (int t = 0; t < trackBank.getRows(); t++) {
-			if (trackBank.getInt("n_hits", t) < 0) continue;
-			int trackId = trackBank.getInt("trackid", t);
+			int nhits = trackBank.getInt("n_hits", t);
+			double chi2 = trackBank.getFloat("chi2", t);
+			if (nhits < 7 || chi2 < 0 || chi2 > 4) continue;
+			int trackid = trackBank.getInt("trackid", t);
 			ntracks++;
 			for (int h = 0; h < hitBank.getRows(); h++) {
-				if (hitBank.getInt("trackid", h) == trackId) {
+				if (hitBank.getInt("trackid", h) == trackid) {
 					int col = hitBank.getShort("id", h) - 1;
 					int sector = wfBank.getInt("sector", col);	
 					int layer = wfBank.getInt("layer", col);

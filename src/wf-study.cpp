@@ -26,6 +26,8 @@
 #include "TMultiGraph.h"
 #include "TFile.h"
 
+#include "hipo4/reader.h"
+
 /**
  * @brief Convert (sector, layer, component) to a unqiue wire id (number betwwen 0 and 575)
  * 
@@ -114,6 +116,49 @@ TGraph* getZPhiLine(AhdcWire* wire, const char * name) {
     return gr;
 }
 
+double stepFunction(double x, double x0, double width) {
+    return 1/(1+exp(-(x-x0)/width));
+}
+
+double T2D(double x, double p[]) {
+    double p1_int = p[0];
+    double p1_slope = p[1];
+    double p2_int = p[2];
+    double p2_slope = p[3];
+    double p3_int = p[4];
+    double p3_slope = p[5];
+    double t1_x0 = p[6];
+    double t1_width = p[7];
+    double t2_x0 = p[8];
+    double t2_width = p[9];
+
+    double P1 = (p1_int + p1_slope*x);
+    double P2 = (p2_int + p2_slope*x);
+    double P3 = (p3_int + p3_slope*x);
+
+    double t1 = stepFunction(x, t1_x0, t1_width);
+    double t2 = stepFunction(x, t2_x0, t2_width);
+
+    return (1-t1)*P1 + t1*(1-t2)*P2 + t2*P3;
+}
+
+TGraph* plot_T2D() {
+    double p[] = {-0.13511427046508234, 	0.013052320185681464, 	-0.16792897158486955, 	0.016143446622666355, 	1.2276895340322205, 	0.006202508238213222, 	0.0, 	0.5, 	137.4477762229958, 	0.5};
+    double tmin = 0;
+    double tmax = 600;
+    double dt = tmax - tmin;
+    double N = 100;
+    TGraph* gr = new TGraph(N+1);
+    for (int i = 0; i <= N; i++) {
+        double x = tmin + dt*i/N;
+        double y = T2D(x, p);
+        gr->SetPoint(i, x, y);
+    }
+    gr->SetLineColor(kRed);
+    gr->SetLineWidth(2);
+    return gr;
+}
+
 int main (int argc, char * argv[]) {
 	
     AhdcDetector* ahdc = new AhdcDetector();
@@ -141,10 +186,28 @@ int main (int argc, char * argv[]) {
     TFile* file = new TFile("./output/wf-study.root", "RECREATE");
     c->Write("phi-versus-z");
 
+    plot_T2D()->Write("T2D_function");
+
     file->Close();
 
     printf("Task finished : file ./output/wf-study.root created\n");
 
+
+    ////////////////////////////////////////
+    // HIPO File
+    ////////////////////////////////////////
+    hipo::reader reader;
+    reader.open("/home/touchte-codjo/Desktop/hipofiles/new-wfType/rec_helium_run_22172_fix_v1.hipo");
+	hipo::dictionary factory;
+    reader.readDictionary(factory);
+    hipo::bank  trackBank(factory.getSchema("AHDC::kftrack"));
+    hipo::event event;
+
+    hipo::schema schema = trackBank.getSchema();
+
+    std::string schema_str = schema.getSchemaString();
+
+    std::cout << schema_str << std::endl;
 
 	return 0;
 }
