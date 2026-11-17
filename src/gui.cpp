@@ -705,7 +705,7 @@ void Window::on_button_next_clicked(){
 	Glib::signal_timeout().connect([this] () -> bool {
 				if (is_paused) {return false;}
 				if (this->dataEventAction()) {
-					if (nWF == 0 || ntracks < 2) {return true;} // continue the timeout
+					if (nWF == 0) {return true;} // continue the timeout
 					else {return false;} // stop the timeout
 				}
 				else {return false;} // stop the timeout
