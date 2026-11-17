@@ -7,6 +7,7 @@ I'm still working on making this code more portable. For now, one has to do the 
 ```shell
 gtkmm-4.0
 cairomm-1.16
+ccdb # https://github.com/JeffersonLab/ccdb
 ```
 
 **This portion of code in the `src/Makefile` must be replaced to match your current installation of the HIPO utility for C++**
